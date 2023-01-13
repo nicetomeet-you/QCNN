@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 
 ms.context.set_context(mode=ms.context.PYNATIVE_MODE, device_target="CPU")
 
-
+#定义卷积核函数
 def conv(bit_up=0, bit_down=1, prefix='0'):
     _circ = Circuit()
     _circ += U3('theta00', 'phi00', 'lam00', bit_up)
@@ -29,7 +29,7 @@ def conv(bit_up=0, bit_down=1, prefix='0'):
 
     return _circ
 
-
+#生成Ansatz
 def ansa():
     ansatz = Circuit()
     ansatz += conv(0, 1, '00')
@@ -60,10 +60,10 @@ def ansa():
 class Main(HybridModel):
     def __init__(self):
         super().__init__()
-        self.dataset = self.build_dataset(self.origin_x, self.origin_y, 10)
-        self.qnet = MQLayer(self.build_grad_ops())
-        self.model = self.build_model()
-        self.checkpoint_name = os.path.join(project_path, "model.ckpt")
+        self.dataset = self.build_dataset(self.origin_x, self.origin_y, 10)  # 通过官方提供的父类加载数据集
+        self.qnet = MQLayer(self.build_grad_ops())  # 生成量子神经网络
+        self.model = self.build_model()  # 建立模型
+        self.checkpoint_name = os.path.join(project_path, "model.ckpt")  # 保存模型参数
 
     def build_dataset(self, x, y, batch=None):
         # alpha = X[:, :3] * X[:, 1:]           # 每一个样本中，利用相邻两个特征值计算出一个参数，即每一个样本会多出3个参数（因为有4个特征值），并储存在alpha中
@@ -86,7 +86,7 @@ class Main(HybridModel):
             train = train.batch(batch)
         return train
 
-    def build_grad_ops(self):
+    def build_grad_ops(self):  # 在此函数中搭建量子卷积神经网络
         circ = Circuit()
         for i in range(8):
             circ += RX(f'rx{i}').on(i)
